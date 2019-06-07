@@ -1,0 +1,54 @@
+﻿@model MinIT.Common.ViewModels.MeetingItemStatus.MeetingItemStatusViewModel
+
+<div class="card">
+    <div class="card-header">Meeting Item Statuses</div>
+    <div class="card-body">
+        <button class="btn btn-info" data-toggle="modal" data-target="#myModal">
+            New Meeting Item Status
+        </button>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var meetingItemStatus in Model.MeetingItemStatuses)
+                {
+                    <tr>
+                        <td>@meetingItemStatus.Name</td>
+                    </tr>
+                 }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Add Meeting Item Status</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="MeetingItemStatus" asp-action="AddMeetingItemStatus" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Meeting Type:</label>
+                        <input asp-for="Name" type="text" class="form-control" id="name">
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

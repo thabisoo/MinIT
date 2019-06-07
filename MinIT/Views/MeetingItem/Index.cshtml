@@ -1,0 +1,255 @@
+﻿@model MinIT.Common.ViewModels.Item.ItemViewModel
+@{ 
+    //var heading = $"({Model.Meeting.Number}) -{Model.Meeting.DateTime}";
+}
+
+<div class="card">
+    <div class="card-header">@Model.Heading</div>
+    <div class="card-body">
+        <button class="btn btn-info" data-toggle="modal" data-target="#addNewMeetingItemModal">
+            New Meeting Item
+        </button>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Comment</th>
+                    <th>Due Date</th>
+                    <th>User</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var meetingItem in Model.Items)
+                {
+                <tr>
+                    <td>@meetingItem.Description</td>
+                    <td>@meetingItem.Comment</td>
+                    <td>@meetingItem.DueDate.DateTime</td>
+                    <td>@meetingItem.User.FullName</td>
+                    <td>
+                        <button onclick="getItemDetails('@meetingItem.Id')" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#editMeetingItemModal">Edit Meeting Item</button>
+                        <button onclick="getItemDetails('@meetingItem.Id')" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#editMeetingItemStatusModal">Update Status</button>
+                        <button onclick="getItemHistory('@meetingItem.Id')" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#showMeetingItemHistoryModal">View History</button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="addNewMeetingItemModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title"> Add New Meeting Item</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="MeetingItem" asp-action="AddMeetingItem" method="post">
+
+                <input type="hidden" asp-for="Meeting.Id" />
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Description:</label>
+                        <input asp-for="Description" type="text" class="form-control" id="name">
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Due Date:</label>
+                        <input asp-for="DueDate" type="datetime-local" class="form-control" id="name">
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Asign To:</label>
+                        <select class="form-control" asp-for="UserId"
+                                asp-items="@(new SelectList(Model.Users,"Id","FullName"))"></select>
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="editMeetingItemModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Meeting Item</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="MeetingItem" asp-action="EditMeetingItem" method="post">
+
+                <input type="hidden" asp-for="Id" id="editItemId" />
+                <input type="hidden" asp-for="Meeting.Id" />
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Description:</label>
+                        <input asp-for="Description" type="text" class="form-control" id="editDescription">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Due Date:</label>
+                        <input asp-for="DueDate" type="datetime-local" class="form-control" id="editDueDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Asign To:</label>
+                        <select class="form-control" asp-for="UserId"
+                                asp-items="@(new SelectList(Model.Users,"Id","FullName"))" id="editUser"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Comment:</label>
+                        <textarea asp-for="Comment" rows="4" style="resize: none;" class="form-control" id="editComment"></textarea>
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="editMeetingItemStatusModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Meeting Item Status</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="MeetingItem" asp-action="EditMeetingItemStatus" method="post">
+
+                <input type="hidden" asp-for="Id" id="editItemStatusId" />
+                <input type="hidden" asp-for="Meeting.Id" />
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Status:</label>
+                        <select class="form-control" asp-for="ItemStatusId"
+                                asp-items="@(new SelectList(Model.MeetingItemStatuses,"Id","Name"))" id="editStatus"></select>
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="showMeetingItemHistoryModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Item History</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="MeetingItem" asp-action="EditMeetingItemStatus" method="post">
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Description:</label>
+                        <input type="text" class="form-control" id="hDescription"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Person Responsible:</label>
+                        <input type="text" id="hPserson" class="form-control"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Due Date:</label>
+                        <input type="text" id="hDueDate" class="form-control"/>
+                    </div>
+
+                    <div id="statusUpdates"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+
+    function getItemDetails(id) {
+        $.ajax({
+            url: "MeetingItem/GetMeetingItem/" + id,
+            cache: false,
+            success: function (data) {
+                var date = new Date(data.dueDate);
+                var date = data.dueDate.substring(0, data.dueDate.length - 6);
+
+                $("#editItemId").val(data.id);
+                $("#editItemStatusId").val(data.id);           
+                $("#editDescription").val(data.description);
+                $("#editDueDate").val(date);
+                $("#editUser").val(data.userId);
+                $("#editComment").val(data.comment);
+                $("#editStatus").val(data.itemStatusId);
+            }
+        });
+    }
+
+    function getItemHistory(id) {
+        $.ajax({
+            url: "MeetingItem/History/" + id,
+            type: "POST",
+            cache: false,
+            success: function (data) {
+
+                $("#hDescription").val(data.item.description);
+                $("#hPserson").val(data.item.user.firstName + " " + data.item.user.firstName);
+                $("#hDueDate").val(new Date(data.item.updatedAt));
+
+                var pTag = "";
+                var historyCount = 0;
+
+                data.itemHistories.forEach(function (item) {
+                    historyCount = historyCount + 1;
+                    pTag = pTag + "<p><strong>" + historyCount + ".</strong> Item status was updated to <strong>" + item.status + "</strong> on " + new Date(item.updatedAt) + "</p><hr>";
+                });
+
+                $("#statusUpdates").html(pTag)
+            }
+        });
+    }
+</script>

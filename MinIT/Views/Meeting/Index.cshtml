@@ -1,0 +1,152 @@
+﻿@model MinIT.Common.ViewModels.Meeting.MeetingViewModel
+
+<div class="card">
+    <div class="card-header">Meetings</div>
+    <div class="card-body">
+        <button class="btn btn-info" data-toggle="modal" data-target="#myModal">
+            Add New Meeting
+        </button>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Number</th>
+                    <th>Date</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var meeting in Model.Meetings)
+                {
+                <tr>
+                    <td>@meeting.Type</td>
+                    <td>@meeting.Number</td>
+                    <td>@meeting.DateTime.DateTime</td>
+                    <td><a class="btn btn-info" asp-area="" asp-controller="MeetingItem" asp-action="Index" asp-route-id="@meeting.Id">View</a></td>
+                </tr>
+                 }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Create a Meeting</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form asp-controller="Meeting" asp-action="CreateMeeting" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Meeting Type:</label>
+                        <select id="meetingType" class="form-control" asp-for="MeetingType.Id"
+                                asp-items="@(new SelectList(Model.MeetingTypes,"Id","Name"))">
+                            <option>Select Meeting Type</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="dateTime">Date & Time of Meeting:</label>
+                        <input asp-for="DateTime" type="datetime-local" class="form-control" id="dateTime">
+                    </div>
+                </div>
+
+                <div id="lblCarryOver">
+                    <label class="col-form-label">Carry over to this meeting</label>
+                    <table id="previosItems" class="table">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>Description</th>
+                                <th>Assigned To</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" id="btnSave" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#lblCarryOver").hide();
+
+        $("#meetingType").change(function () {
+            $("#previosItems > tbody").html("");
+
+            var meetingTypeId = $("#meetingType option:selected").val();
+            var row = "";
+            $.ajax({
+                url: "MeetingItem/GetPreviousMeetingItems/" + meetingTypeId,
+                cache: false,
+                success: function (data) {
+                    if (data === null || data === undefined)
+                        return
+
+                    $("#lblCarryOver").show();
+                    $.each(data, function (index, obj) {
+                        console.log(obj)
+                        row += "<tr><td><input type='checkbox' id='" + obj.id + "'/></td><td>" + obj.description + "</td><td>" + obj.user.fullName + "</td></tr>";
+                    });
+
+                    $("#previosItems tbody").append(row);
+                }
+            });
+        });
+
+        $("#btnSave").click(function () {
+            var meetingType = $("#meetingType option:selected").text();
+            var dateTime = $("#dateTime").val();
+
+            date = new Date(dateTime);
+
+            if (meetingType === "Select Meeting Type") {
+                alert("Select Meeting Type");
+                return;
+            }
+
+            if (date < Date.now()) {
+                alert("Choose a date that's in the future");
+                return;
+            }
+                
+            var itemsToCarryOver = $('#previosItems').find('input[type="checkbox"]:checked');
+            var items = [];
+
+            $.each(itemsToCarryOver, function (index, item) {
+                items.push(item.id);
+            });
+
+            var meetingViewModel = {
+                meetingType: { id: $("#meetingType").val() },
+                dateTime: $("#dateTime").val(),
+                carriedOverItemIds: items
+            }
+
+            $.ajax({
+                url: "Meeting/CreateMeeting",
+                type: "POST",
+                data: meetingViewModel,
+                cache: false,
+                success: function (data) {
+                    location.reload();
+                }
+            });
+
+        });
+    });
+</script>
